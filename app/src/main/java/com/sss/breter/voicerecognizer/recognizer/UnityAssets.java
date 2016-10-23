@@ -34,22 +34,26 @@ public class UnityAssets {
     private final AssetManager assetManager;
     private final File externalDir;
 
+    private String _targerDir;
+
     public UnityAssets(Context context) throws IOException {
         File appDir = context.getExternalFilesDir((String)null);
         if(null == appDir) {
             throw new IOException("cannot get external files dir, external storage state is " + Environment.getExternalStorageState());
         } else {
-            this.externalDir = new File(appDir, SYNC_DIR);
+            _targerDir = SYNC_DIR;
+            this.externalDir = new File(appDir, _targerDir);
             this.assetManager = context.getAssets();
         }
     }
 
     public UnityAssets(Context context, String dest) throws IOException {
         File appDir = context.getExternalFilesDir((String)null);
+        _targerDir = dest;
         if(null == appDir) {
             throw new IOException("cannot get external files dir, external storage state is " + Environment.getExternalStorageState());
         } else {
-            this.externalDir = new File(appDir, dest);
+            this.externalDir = new File(appDir, _targerDir);
             this.assetManager = context.getAssets();
         }
     }
@@ -131,7 +135,7 @@ public class UnityAssets {
     }
 
     private InputStream openAsset(String asset) throws IOException {
-        return this.assetManager.open((new File(SYNC_DIR, asset)).getPath());
+        return this.assetManager.open((new File(_targerDir, asset)).getPath());
     }
 
     public void updateItemList(Map<String, String> items) throws IOException {

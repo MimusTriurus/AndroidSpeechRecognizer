@@ -1,6 +1,10 @@
 package com.sss.breter.voicerecognizer;
 
 import java.io.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import android.content.res.AssetManager;
 import android.media.AudioManager;
@@ -28,15 +32,13 @@ import android.os.Environment;
 
 public class MainActivity extends UnityPlayerActivity implements RecognitionListener {
 
-
-    private static final String TAG = "Recognizer";
-    private static final String COMMAND_SEARCH = "command";
-    //private static final String KWS_SEARCH = "hotword";
-
-    // start test area
+    // *********** секция взаимодествия с Unity *************
+    // имя объекта принимающего callback из этой библиотеки
     private static String _recieverObjectName;
+    // имя метода принимающего callback-log из этой библиотеки
     private static String _recieverMethodName;
-    private static String _filesDirectory;
+    // имя метода принимающего callback с результатом распознавания речи
+    private static String _recognitionResultMethodNameReciever;
 
     public static void setRecieverObjectName(String name){
         _recieverObjectName = name;
@@ -46,26 +48,21 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
         _recieverMethodName = name;
     }
 
+    public static void setRecognitionResultRecieverMethod(String name)
+    {
+        _recognitionResultMethodNameReciever = name;
+    }
+
     public  static void toUnityLog(String message)
     {
         UnityPlayer.UnitySendMessage(_recieverObjectName, _recieverMethodName, message);
     }
-    // end test area
+    // ******************************************************
 
-    private final Handler mHandler = new Handler();
+    //private final Handler mHandler = new Handler();
 
     private SpeechRecognizer mRecognizer;
-
-    private final String ACOUSTIC_MODEL_DIR_NAME = "acoustic-models";
-    private final String DICTIONARYS_DIR_NAME = "dictionaries";
-    private final String GRAMMARS_DIR_NAME = "grammars";
-
-    private String _assetDirOnSdCard;
-    private String _language;
-    private String _sampleRate;
-    private String _dictionary;
-    private String _grammar;
-    private String _hotword;
+    private Map<String, String> _grammarFilesContainer;
 
     /* Named searches allow to quickly reconfigure the decoder */
     private static final String KWS_SEARCH = "wakeup";
@@ -75,15 +72,14 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
     /* Keyword we are looking for to activate menu */
     private static final String KEYPHRASE = "oh mighty computer";
 
-    public void runRecognizerSetup() {
-        // Recognizer initialization is a time-consuming and it involves IO,
-        // so we execute it in async task
+    public void runRecognizerSetup(String language) {
+
         new AsyncTask<Void, Void, Exception>() {
             @Override
             protected Exception doInBackground(Void... params) {
                 try {
                     //Assets assets = new Assets(MainActivity.this);
-                    UnityAssets assets = new UnityAssets(MainActivity.this);
+                    UnityAssets assets = new UnityAssets(MainActivity.this, "eng");
                     File assetDir = assets.syncAssets();
                     setupRecognizer(assetDir);
                 } catch (IOException e) {
@@ -135,34 +131,47 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
         // Create keyword-activation search.
         mRecognizer.addKeyphraseSearch(KWS_SEARCH, KEYPHRASE);
 
-        // Create grammar-based search for selection between demos
-        File menuGrammar = new File(assetsDir, "grammarFiles/menu.gram");
-        mRecognizer.addGrammarSearch(MENU_SEARCH, menuGrammar);
-
-        // Create grammar-based search for digit recognition
-        File digitsGrammar = new File(assetsDir, "grammarFiles/digits.gram");
-        mRecognizer.addGrammarSearch(DIGITS_SEARCH, digitsGrammar);
+        addGrammarSearch(assetsDir);
 
         toUnityLog("end setup recognizer");
     }
 
-    private void post(long delay, Runnable task) {
-        mHandler.postDelayed(task, delay);
-    }
+    //private void post(long delay, Runnable task) {
+        //mHandler.postDelayed(task, delay);
+    //}
 
     public MainActivity() throws IOException
     {
-
+        _grammarFilesContainer = new HashMap<String, String>();
     }
+
+    public void addGrammarFile(String searchName, String destination)
+    {
+        if (_grammarFilesContainer != null)
+        {
+            _grammarFilesContainer.put(searchName, destination);
+            toUnityLog("add grammar:" + searchName + " destination");
+        }
+    }
+
+    private void addGrammarSearch(File assetsDir)
+    {
+        for (Map.Entry entry : _grammarFilesContainer.entrySet()) {
+            File grammar = new File(assetsDir, entry.getValue().toString());
+            if (grammar.exists())
+                mRecognizer.addGrammarSearch(entry.getKey().toString(), grammar);
+        }
+    }
+
     // движок услышал какой-то звук, может быть это речь (а может быть и нет)
     @Override
     public void onBeginningOfSpeech() {
-        UnityPlayer.UnitySendMessage(_recieverObjectName, _recieverMethodName, "onBeginningOfSpeech");
+        //UnityPlayer.UnitySendMessage(_recieverObjectName, _recieverMethodName, "onBeginningOfSpeech");
     }
     // звук закончился
     @Override
     public void onEndOfSpeech() {
-        UnityPlayer.UnitySendMessage(_recieverObjectName, _recieverMethodName, "onEndOfSpeech");
+        //UnityPlayer.UnitySendMessage(_recieverObjectName, _recieverMethodName, "onEndOfSpeech");
     }
     // есть промежуточные результаты распознавания. Для активационной фразы это значит, что она сработала. Аргумент Hypothesis содержит данные о распознавании (строка и score)
     @Override
@@ -175,14 +184,14 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
             switchSearch(MENU_SEARCH);
         else if (text.equals(DIGITS_SEARCH))
             switchSearch(DIGITS_SEARCH);
-        else
-            toUnityLog(hypothesis.getHypstr());
+        //else
+            //toUnityLog(hypothesis.getHypstr());
     }
     // конечный результат распознавания. Этот метод будет вызыван после вызова метода stop у SpeechRecognizer. Аргумент Hypothesis содержит данные о распознавании (строка и score)
     @Override
     public void onResult(Hypothesis hypothesis) {
         if (hypothesis != null) {
-            UnityPlayer.UnitySendMessage(_recieverObjectName, _recieverMethodName, "onResult:" + hypothesis.getHypstr());
+            UnityPlayer.UnitySendMessage(_recieverObjectName, _recognitionResultMethodNameReciever, "result:" + hypothesis.getHypstr());
         }
     }
 
