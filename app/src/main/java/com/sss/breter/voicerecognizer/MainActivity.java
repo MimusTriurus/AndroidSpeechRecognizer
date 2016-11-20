@@ -132,8 +132,6 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
     private String _baseGrammarName = null;
     private String _activeGrammarName = null;
     private int _timeoutInterval = 5000;
-    private boolean _manualSwitchGrammatic = false;
-
     /**
      * Конфигурируем mRecognizer
      * @param language - язык
@@ -231,48 +229,24 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
     }
 
     /**
-     * переключение файла грамматики проиходит вызовом метода
-     * switchSearch из проекта Unity
-     * и если таковой файл указан в _grammarFilesContainer
-     */
-    public void setManualSwitchGrammatic()
-    {
-        _manualSwitchGrammatic = true;
-    }
-
-    /**
-     * переключение файла грамматики проиходит при получении
-     * промежуточных результатов распознования если hypothesis
-     * равна имени файла грамматики и таковой есть в _grammarFilesContainer
-     */
-    public void setAutomaticSwitchGrammatic()
-    {
-        _manualSwitchGrammatic = false;
-    }
-    /**
      * Переключаем файл грамматики для mRecognizer
      * @param searchName - ключ файла грамматики
      */
     public void switchSearch(String searchName) {
-
-        if ((!searchName.equals(KWS_SEARCH)) & (!_grammarFilesContainer.containsKey(searchName)))
-        {
-            //toUnityLog("grammar file " + searchName + " not found");
-            //return;
-        }
-
         _mRecognizer.stop();
-
         if (searchName.equals(KWS_SEARCH)) {
             _activeGrammarName = _baseGrammarName;
             _mRecognizer.startListening(_baseGrammarName);
         }
         else
-        if (_grammarFilesContainer.containsKey(searchName))
         {
-            _activeGrammarName = searchName;
-            toUnityLog("switch grammar to:" + searchName);
-            _mRecognizer.startListening(_activeGrammarName, _timeoutInterval);
+            if (_grammarFilesContainer.containsKey(searchName)) {
+                if (!_activeGrammarName.equals(searchName)) {
+                    toUnityLog("switch grammar to:" + searchName);
+                    _activeGrammarName = searchName;
+                }
+                _mRecognizer.startListening(_activeGrammarName, _timeoutInterval);
+            }
         }
     }
 
@@ -313,7 +287,7 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
         if (_grammarFilesContainer != null)
         {
             _grammarFilesContainer.put(searchName, GRAMMAR_FILES_DIR + destination);
-            toUnityLog("add grammar:" + searchName + " destination:" + destination);
+            //toUnityLog("add grammar:" + searchName);
         }
     }
 
@@ -354,16 +328,13 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
     public void onPartialResult(Hypothesis hypothesis) {
         if (hypothesis == null)
             return;
+
         String partialResult = hypothesis.getHypstr();
-        if (_manualSwitchGrammatic)
-            regonitionPartialResultToUnity(partialResult);
+
+        if ((partialResult.equals(_keyword)) & (_useKeyWord))
+            switchSearch(KWS_SEARCH);
         else
-        {
-            if ((partialResult.equals(_keyword)) & (_useKeyWord))
-                switchSearch(KWS_SEARCH);
-            else
-                switchSearch(partialResult);
-        }
+            regonitionPartialResultToUnity(partialResult);
     }
     /**
      * Конечный результат распознавания. Этот метод будет вызыван после вызова метода stop у SpeechRecognizer.
@@ -373,7 +344,7 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
     @Override
     public void onResult(Hypothesis hypothesis) {
         if (hypothesis != null) {
-            regonitionResultToUnity("result:" + hypothesis.getHypstr());
+            regonitionResultToUnity(hypothesis.getHypstr());
             switchSearch(_activeGrammarName);
         }
     }
