@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
+import java.util.Scanner;
 import android.content.res.AssetManager;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
@@ -236,7 +236,15 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
         _mRecognizer.stop();
         if (searchName.equals(KWS_SEARCH)) {
             _activeGrammarName = _baseGrammarName;
-            _mRecognizer.startListening(_baseGrammarName);
+            try
+            {
+                _mRecognizer.startListening(_baseGrammarName);
+            }
+            catch (Exception e)
+            {
+                toUnityLog("error on start listening:" + e.getMessage());
+                return;
+            }
         }
         else
         {
@@ -253,6 +261,7 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
     private void setupRecognizer(File assetsDir) throws IOException {
 
         toUnityLog("start setup recognizer");
+        //readFile(assetsDir + "/" + DICTIONARIES_DIR + _dictionaryName);
         _mRecognizer = SpeechRecognizerSetup.defaultSetup()
                 .setAcousticModel(new File(assetsDir, ACOUSTIC_MODELS_DIR + _bitrate))
                 .setDictionary(new File(assetsDir, DICTIONARIES_DIR + _dictionaryName))
@@ -300,7 +309,15 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
         for (Map.Entry entry : _grammarFilesContainer.entrySet()) {
             File grammar = new File(assetsDir, entry.getValue().toString());
             if (grammar.exists())
-                _mRecognizer.addGrammarSearch(entry.getKey().toString(), grammar);
+                try {
+                    //readFile(grammar.getAbsolutePath());
+                    _mRecognizer.addGrammarSearch(entry.getKey().toString(), grammar);
+                }
+                catch (Exception e)
+                {
+                    toUnityLog("error on add .gram:" + e.getMessage());
+                    return;
+                }
         }
     }
 
@@ -343,6 +360,7 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
      */
     @Override
     public void onResult(Hypothesis hypothesis) {
+
         if (hypothesis != null) {
             regonitionResultToUnity(hypothesis.getHypstr());
             switchSearch(_activeGrammarName);
@@ -357,5 +375,11 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
     @Override
     public void onTimeout() {
         switchSearch(_activeGrammarName);
+    }
+
+    public static void readFile(String destination) throws FileNotFoundException {
+        String [] rows = new Scanner(new File(destination)).useDelimiter("\\Z").next().split("\n");
+        for ( String s : rows )
+            toUnityLog(s);
     }
 }
