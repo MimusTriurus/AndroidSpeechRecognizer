@@ -163,6 +163,7 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
                     if (_baseGrammarName == null)
                         getBaseGrammarName();
                     switchSearch(KWS_SEARCH);
+                    //switchSearch(_baseGrammarName);
                     toUnityLog(_baseGrammarName);
                 }
             }
@@ -233,12 +234,21 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
      * @param searchName - ключ файла грамматики
      */
     public void switchSearch(String searchName) {
-        _mRecognizer.stop();
+        try
+        {
+            _mRecognizer.stop();
+        }
+        catch (Exception e)
+        {
+            toUnityLog("error on stop listening:" + e.getMessage());
+            return;
+        }
+
         if (searchName.equals(KWS_SEARCH)) {
             _activeGrammarName = _baseGrammarName;
             try
             {
-                _mRecognizer.startListening(_baseGrammarName);
+                _mRecognizer.startListening(_baseGrammarName, 3000);
             }
             catch (Exception e)
             {
@@ -253,7 +263,16 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
                     toUnityLog("switch grammar to:" + searchName);
                     _activeGrammarName = searchName;
                 }
-                _mRecognizer.startListening(_activeGrammarName, _timeoutInterval);
+                toUnityLog("listening with interval");
+                try
+                {
+                    _mRecognizer.startListening(searchName, _timeoutInterval);
+                }
+                catch (Exception e)
+                {
+                    toUnityLog("error on start listening with interval:" + e.getMessage());
+                    return;
+                }
             }
         }
     }
@@ -327,6 +346,7 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
     @Override
     public void onBeginningOfSpeech() {
         //UnityPlayer.UnitySendMessage(_recieverObjectName, _recieverMethodName, "onBeginningOfSpeech");
+        //toUnityLog("start of speech");
     }
 
     /**
@@ -335,6 +355,7 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
     @Override
     public void onEndOfSpeech() {
         //UnityPlayer.UnitySendMessage(_recieverObjectName, _recieverMethodName, "onEndOfSpeech");
+        //toUnityLog("end of speech");
     }
 
     /**
@@ -343,6 +364,7 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
      */
     @Override
     public void onPartialResult(Hypothesis hypothesis) {
+
         if (hypothesis == null)
             return;
 
@@ -352,6 +374,7 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
             switchSearch(KWS_SEARCH);
         else
             regonitionPartialResultToUnity(partialResult);
+
     }
     /**
      * Конечный результат распознавания. Этот метод будет вызыван после вызова метода stop у SpeechRecognizer.
@@ -365,6 +388,8 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
             regonitionResultToUnity(hypothesis.getHypstr());
             switchSearch(_activeGrammarName);
         }
+        else
+            toUnityLog("hyp is null");
     }
 
     @Override
@@ -374,6 +399,7 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
 
     @Override
     public void onTimeout() {
+        toUnityLog("timeout");
         switchSearch(_activeGrammarName);
     }
 
