@@ -1,33 +1,18 @@
 package com.sss.breter.voicerecognizer;
 
 import java.io.*;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.Scanner;
-import android.content.res.AssetManager;
-import android.media.AudioManager;
-import android.media.ToneGenerator;
-import android.os.AsyncTask;
-import android.os.Handler;
-import android.util.Log;
 
-import android.widget.TextView;
+import android.os.AsyncTask;
+
 import com.sss.breter.voicerecognizer.recognizer.UnityAssets;
 import com.unity3d.player.UnityPlayer;
 import com.unity3d.player.UnityPlayerActivity;
 
 import edu.cmu.pocketsphinx.*;
-
-import org.apache.commons.io.FileUtils;
-
-import  com.sss.breter.voicerecognizer.recognizer.Grammar;
-import  com.sss.breter.voicerecognizer.recognizer.PhonMapper;
-import  com.sss.breter.voicerecognizer.recognizer.DataFiles;
-
-import android.os.Environment;
-
 
 
 public class MainActivity extends UnityPlayerActivity implements RecognitionListener {
@@ -49,6 +34,10 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
      * имя метода принимающего callback с промежуточным результатом распознования речи
      */
     private static String _recognitionPartialResultMethodNameReciever = null;
+    /**
+     * имя метода принимающего колбэк о завершении инициализиции распознователя
+     */
+    private static String _initializationCompleteMethodNameReciever = null;
 
     /**
      * устанавливаем имя Unity объекта - приёмника сообщений из данной библиотеки
@@ -82,10 +71,16 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
     public static void setRecognitionPartialResultRecieverMethod(String name) { _recognitionPartialResultMethodNameReciever = name; }
 
     /**
+     * устанавливаем имя метода Unity объекта - обработчика сообщения об окончании инициализации распознавателя
+     * @param name - имя метода
+     */
+    public static void setInitializationCompleteMethod(String name) { _initializationCompleteMethodNameReciever = name; }
+
+    /**
      * отправка в Unity сообщения для вывода в лог
      * @param message - сообщение
      */
-    public  static void toUnityLog(String message)
+    private static void toUnityLog(String message)
     {
         if ((_recieverObjectName != null) & (_logReceiverMethodName != null))
             UnityPlayer.UnitySendMessage(_recieverObjectName, _logReceiverMethodName, message);
@@ -95,7 +90,7 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
      * отправка в Unity сообщения с результатами распознавания
      * @param recognitionResult - результат распознавания в рамках последней сессии
      */
-    public  static void regonitionResultToUnity(String recognitionResult)
+    private static void regonitionResultToUnity(String recognitionResult)
     {
         if ((_recieverObjectName != null) & (_recognitionResultMethodNameReciever != null))
             UnityPlayer.UnitySendMessage(_recieverObjectName, _recognitionResultMethodNameReciever, recognitionResult);
@@ -105,18 +100,25 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
      * отправка в Unity сообщения с промежуточными результатами распознавания
      * @param recognitionPartialResult
      */
-    public  static void regonitionPartialResultToUnity(String recognitionPartialResult)
+    private static void regonitionPartialResultToUnity(String recognitionPartialResult)
     {
         if ((_recieverObjectName != null) & (_recognitionPartialResultMethodNameReciever != null))
             UnityPlayer.UnitySendMessage(_recieverObjectName, _recognitionPartialResultMethodNameReciever, recognitionPartialResult);
+    }
+    /**
+     * отправка в Unity сообщения с результатами инициализации mRecognizer
+     * @param message
+     */
+    private static void initializationResult(String message)
+    {
+        if ((_recieverObjectName != null) & (_initializationCompleteMethodNameReciever != null))
+            UnityPlayer.UnitySendMessage(_recieverObjectName, _initializationCompleteMethodNameReciever, message);
     }
     // ******************************************************
 
     private SpeechRecognizer _mRecognizer;
     private Map<String, String> _grammarFilesContainer;
 
-    /* Named searches allow to quickly reconfigure the decoder */
-    private static final String KWS_SEARCH = "wakeup";
     // базовая папка для акустических моделей(диференциация по битрейту)
     private static final String ACOUSTIC_MODELS_DIR = "acousticModels/";
     // базовая папка для словарей
@@ -124,14 +126,23 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
     // базовая папка для файлов грамматики
     private static final String GRAMMAR_FILES_DIR = "grammarFiles/";
 
-    private String _language = "eng";
     private String _bitrate = "16000";
-    private String _dictionaryName = "cmudict-en-us.dict";
-    private boolean _useKeyWord = false;
-    private String _keyword = "computer";
+    private String _dictionaryName = "actualDictionary.dict";
     private String _baseGrammarName = null;
-    private String _activeGrammarName = null;
     private int _timeoutInterval = 5000;
+
+    public void startListening()
+    {
+        if (_mRecognizer != null)
+            _mRecognizer.startListening(_baseGrammarName, _timeoutInterval);
+    }
+
+    public void stopListening()
+    {
+        if (_mRecognizer != null)
+            _mRecognizer.stop();
+    }
+
     /**
      * Конфигурируем mRecognizer
      * @param language - язык
@@ -162,9 +173,10 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
                 } else {
                     if (_baseGrammarName == null)
                         getBaseGrammarName();
-                    switchSearch(KWS_SEARCH);
+                    //switchSearch(KWS_SEARCH);
                     //switchSearch(_baseGrammarName);
                     toUnityLog(_baseGrammarName);
+                    initializationResult("init complete");
                 }
             }
         }.execute();
@@ -179,38 +191,6 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
         else
             toUnityLog("grammarFilesContainer is empty!!!");
     }
-
-    /**
-     * Конфигурируем mRecognizer
-     * @param language      - язык
-     * @param bitrate       - битрейт языковой модели
-     * @param dictionary    - рабочий словарь с фонемами
-     * @param keyword       - ключевое слово
-     */
-    public void runRecognizerSetup(String language, String bitrate ,String dictionary, String keyword) {
-
-        _language = language;
-        _bitrate = bitrate;
-        _dictionaryName = dictionary;
-        _keyword = keyword;
-        _useKeyWord = true;
-
-        runRecognizerSetup(_language);
-    }
-    /**
-     * Конфигурируем mRecognizer
-     * @param language      - язык
-     * @param keyword       - ключевое слово
-     */
-    public void runRecognizerSetup(String language, String keyword) {
-
-        _language = language;
-        _keyword = keyword;
-        _useKeyWord = true;
-
-        runRecognizerSetup(_language);
-    }
-
     /**
      * устанавливает временной интервал сессии распознавания
      * @param interval  -   временной интервал в м.с.
@@ -243,37 +223,16 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
             toUnityLog("error on stop listening:" + e.getMessage());
             return;
         }
-
-        if (searchName.equals(KWS_SEARCH)) {
-            _activeGrammarName = _baseGrammarName;
-            try
-            {
-                _mRecognizer.startListening(_baseGrammarName, 3000);
-            }
-            catch (Exception e)
-            {
-                toUnityLog("error on start listening:" + e.getMessage());
-                return;
-            }
-        }
-        else
+        if (_grammarFilesContainer.containsKey(searchName))
+            _baseGrammarName = searchName;
+        try
         {
-            if (_grammarFilesContainer.containsKey(searchName)) {
-                if (!_activeGrammarName.equals(searchName)) {
-                    toUnityLog("switch grammar to:" + searchName);
-                    _activeGrammarName = searchName;
-                }
-                toUnityLog("listening with interval");
-                try
-                {
-                    _mRecognizer.startListening(searchName, _timeoutInterval);
-                }
-                catch (Exception e)
-                {
-                    toUnityLog("error on start listening with interval:" + e.getMessage());
-                    return;
-                }
-            }
+            _mRecognizer.startListening(_baseGrammarName, _timeoutInterval);
+        }
+        catch (Exception e)
+        {
+            toUnityLog("error on start listening:" + e.getMessage());
+            return;
         }
     }
 
@@ -290,9 +249,6 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
 
                 .getRecognizer();
         _mRecognizer.addListener(this);
-
-        if (_useKeyWord)
-            _mRecognizer.addKeyphraseSearch(KWS_SEARCH, _keyword);
 
         addGrammarSearch(assetsDir);
 
@@ -370,11 +326,7 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
 
         String partialResult = hypothesis.getHypstr();
 
-        if ((partialResult.equals(_keyword)) & (_useKeyWord))
-            switchSearch(KWS_SEARCH);
-        else
-            regonitionPartialResultToUnity(partialResult);
-
+        regonitionPartialResultToUnity(partialResult);
     }
     /**
      * Конечный результат распознавания. Этот метод будет вызыван после вызова метода stop у SpeechRecognizer.
@@ -386,10 +338,8 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
 
         if (hypothesis != null) {
             regonitionResultToUnity(hypothesis.getHypstr());
-            switchSearch(_activeGrammarName);
+            switchSearch(_baseGrammarName);
         }
-        else
-            toUnityLog("hyp is null");
     }
 
     @Override
@@ -400,7 +350,7 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
     @Override
     public void onTimeout() {
         toUnityLog("timeout");
-        switchSearch(_activeGrammarName);
+        switchSearch(_baseGrammarName);
     }
 
     public static void readFile(String destination) throws FileNotFoundException {
