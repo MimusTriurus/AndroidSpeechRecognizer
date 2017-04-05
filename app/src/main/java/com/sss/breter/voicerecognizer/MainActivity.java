@@ -126,14 +126,21 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
     // базовая папка для файлов грамматики
     private static final String GRAMMAR_FILES_DIR = "grammarFiles/";
 
+    private static final String KEYPHRASE_SEARCH = "keyphrase_search";
+
     private String _bitrate = "16000";
-    private String _dictionaryName = "actualDictionary.dict";
     private String _baseGrammarName = null;
-    private int _timeoutInterval = 5000;
+    private int _timeoutInterval = 1000;
+    private boolean _useKeyword = false;
+    private float _threshold = 1e-45f;
 
     public void startListening()
     {
-        if (_mRecognizer != null)
+        if (_mRecognizer == null) return;
+        toUnityLog("try start listening");
+        if (_useKeyword)
+            _mRecognizer.startListening(KEYPHRASE_SEARCH);
+        else
             _mRecognizer.startListening(_baseGrammarName, _timeoutInterval);
     }
 
@@ -176,7 +183,7 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
                     //switchSearch(KWS_SEARCH);
                     //switchSearch(_baseGrammarName);
                     toUnityLog(_baseGrammarName);
-                    initializationResult("init complete");
+                    initializationResult("initComplete");
                 }
             }
         }.execute();
@@ -213,26 +220,18 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
      * Переключаем файл грамматики для mRecognizer
      * @param searchName - ключ файла грамматики
      */
-    public void switchSearch(String searchName) {
+    public void switchSearch(String searchName)
+    {
         try
         {
+            //toUnityLog("try switch search to:" + searchName);
             _mRecognizer.stop();
+            //_mRecognizer.getDecoder().setSearch(searchName);
+            _mRecognizer.startListening(searchName, _timeoutInterval);
         }
         catch (Exception e)
         {
-            toUnityLog("error on stop listening:" + e.getMessage());
-            return;
-        }
-        if (_grammarFilesContainer.containsKey(searchName))
-            _baseGrammarName = searchName;
-        try
-        {
-            _mRecognizer.startListening(_baseGrammarName, _timeoutInterval);
-        }
-        catch (Exception e)
-        {
-            toUnityLog("error on start listening:" + e.getMessage());
-            return;
+            toUnityLog("crash on switch search:" + searchName);
         }
     }
 
@@ -242,15 +241,15 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
         //readFile(assetsDir + "/" + DICTIONARIES_DIR + _dictionaryName);
         _mRecognizer = SpeechRecognizerSetup.defaultSetup()
                 .setAcousticModel(new File(assetsDir, ACOUSTIC_MODELS_DIR + _bitrate))
-                .setDictionary(new File(assetsDir, DICTIONARIES_DIR + _dictionaryName))
-                //.setRawLogDir(assetsDir) // для включения лога
-                .setKeywordThreshold(1e-45f)
+                //.setDictionary(new File(assetsDir, DICTIONARIES_DIR + _dictionaryName))initComplete
+                //.setRawLogDir(assetsDir) // для включения лог
+                .setKeywordThreshold(_threshold)
                 .setBoolean("-allphone_ci", true)
-
                 .getRecognizer();
+
         _mRecognizer.addListener(this);
 
-        addGrammarSearch(assetsDir);
+        //addGrammarSearch(assetsDir);
 
         toUnityLog("end setup recognizer");
     }
@@ -326,7 +325,12 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
 
         String partialResult = hypothesis.getHypstr();
 
-        regonitionPartialResultToUnity(partialResult);
+        String keyword = _mRecognizer.getDecoder().getKws(KEYPHRASE_SEARCH);
+        if (keyword.equals(partialResult))
+            regonitionResultToUnity(partialResult);
+        //else
+            //regonitionPartialResultToUnity("keyword is:" + keyword + " " + partialResult);
+        //
     }
     /**
      * Конечный результат распознавания. Этот метод будет вызыван после вызова метода stop у SpeechRecognizer.
@@ -338,7 +342,7 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
 
         if (hypothesis != null) {
             regonitionResultToUnity(hypothesis.getHypstr());
-            switchSearch(_baseGrammarName);
+            //switchSearch(_baseGrammarName);
         }
     }
 
@@ -349,7 +353,7 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
 
     @Override
     public void onTimeout() {
-        toUnityLog("timeout");
+        //toUnityLog("timeout");
         switchSearch(_baseGrammarName);
     }
 
@@ -357,5 +361,97 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
         String [] rows = new Scanner(new File(destination)).useDelimiter("\\Z").next().split("\n");
         for ( String s : rows )
             toUnityLog(s);
+    }
+
+    /**
+     * добавляем слово в словарь
+     * @param pWord     слово
+     * @param pPhones   транскрипция
+     * @return          рузультат добавления
+     */
+    public boolean addWordIntoDictionary(String pWord, String pPhones)
+    {
+        try
+        {
+            toUnityLog("try add word:" + pWord + " phones:" + pPhones);
+            _mRecognizer.getDecoder().addWord(pWord, pPhones, 1);
+        }
+        catch (Exception e)
+        {
+            toUnityLog("crash on add word:" + e.getMessage());
+            return false;
+        }
+        return true;
+    }
+    /**
+     * добавляем формализованную строку с грамматикой
+     * @param pGrammarName      имя грамматики
+     * @param pGrammarString    формализованная строка грамматики
+     * @return                  результат добавления
+     */
+    public boolean addGrammarString(String pGrammarName, String pGrammarString)
+    {
+        try
+        {
+            toUnityLog("try add grammar string:" + pGrammarString);
+            _mRecognizer.addGrammarSearch(pGrammarName, pGrammarString);
+        }
+        catch (Exception e)
+        {
+            toUnityLog("crash on add grammar string:" + e.getMessage());
+            return false;
+        }
+        return true;
+    }
+    /**
+     * устанавливаем ключевое слово для поиска
+     * @param pKeyword ключевое слово
+     * @return         результат добавления
+     */
+    public boolean setKeyword(String pKeyword)
+    {
+        _useKeyword = true;
+        try
+        {
+            //toUnityLog("try set keyword:" + pKeyword);
+            _mRecognizer.addKeyphraseSearch(KEYPHRASE_SEARCH, pKeyword);
+        }
+        catch (Exception e)
+        {
+            toUnityLog("crash on set keyword:" + pKeyword);
+            return false;
+        }
+
+        return true;
+    }
+    /**
+     * инициируем поиск ключевого слова
+     * @return успешно\нет
+     */
+    public boolean setSearchKeyword()
+    {
+        try
+        {
+            toUnityLog("try set search keyword");
+            //_mRecognizer.getDecoder().setSearch(KEYPHRASE_SEARCH);
+            if (_useKeyword) {
+                _mRecognizer.stop();
+                _mRecognizer.startListening(KEYPHRASE_SEARCH);
+            }
+        }
+        catch (Exception e)
+        {
+            toUnityLog("crash on set search keyword");
+            return false;
+        }
+        return true;
+    }
+    /**
+     * устанавливаем порог срабатывания для ключевой фразы
+     * @param pThreshold порог срабатывания
+     */
+    public void setThreshold(float pThreshold)
+    {
+        _threshold = pThreshold;
     }
 }
