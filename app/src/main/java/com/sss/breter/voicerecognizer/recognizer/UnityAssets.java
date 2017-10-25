@@ -20,206 +20,185 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 /**
  * Created by venen on 22.10.2016.
+ * Класс предназначе для извлечения файлов акустической модели
+ * из apk во "внешнее" хранилище телефона
  */
 public class UnityAssets {
 
-    protected static final String TAG = UnityAssets.class.getSimpleName();
+    protected static final String TAG = UnityAssets.class.getSimpleName( );
+    /**
+     * файл с перечнем извлекаемых файлов
+     */
     public static final String ASSET_LIST_NAME = "assets.lst";
     public static final String SYNC_DIR = "sync";
-    private final String EMPTY_CRC = "0";
+    private final String EMPTY_CRC = " 0 ";
     private final AssetManager assetManager;
     private final File externalDir;
-
+    /**
+     * папка для хранения файлов акустической модели
+     */
     private String _targerDir;
 
-    public UnityAssets(Context context) throws IOException {
-        File appDir = context.getExternalFilesDir((String)null);
-        if(null == appDir) {
-            throw new IOException("cannot get external files dir, external storage state is " + Environment.getExternalStorageState());
+    public UnityAssets( Context context ) throws IOException {
+        File appDir = context.getExternalFilesDir( ( String )null );
+        if( null == appDir ) {
+            throw new IOException( "cannot get external files dir, external storage state is " + Environment.getExternalStorageState( ) );
         } else {
             _targerDir = SYNC_DIR;
-            this.externalDir = new File(appDir, _targerDir);
-            this.assetManager = context.getAssets();
+            this.externalDir = new File( appDir, _targerDir );
+            this.assetManager = context.getAssets( );
         }
     }
 
-    public UnityAssets(Context context, String dest) throws IOException {
-        File appDir = context.getExternalFilesDir((String)null);
+    public UnityAssets( Context context, String dest ) throws IOException {
+        File appDir = context.getExternalFilesDir( ( String )null );
         _targerDir = dest;
-        if(null == appDir) {
-            throw new IOException("cannot get external files dir, external storage state is " + Environment.getExternalStorageState());
+        if( null == appDir ) {
+            throw new IOException( "cannot get external files dir, external storage state is " + Environment.getExternalStorageState( ) );
         } else {
-            this.externalDir = new File(appDir, _targerDir);
-            this.assetManager = context.getAssets();
+            this.externalDir = new File( appDir, _targerDir );
+            this.assetManager = context.getAssets( );
         }
     }
 
-    public File getExternalDir() {
+    public File getExternalDir( ) {
         return this.externalDir;
     }
 
-    public Map<String, String> getItems() throws IOException {
-        HashMap items = new HashMap();
-        Iterator i$ = this.readLines(this.openAsset(ASSET_LIST_NAME)).iterator();
-
-        while(i$.hasNext()) {
-            String path = (String)i$.next();
-            // отключаем проверку контрольной суммы
-            //InputStreamReader reader = new InputStreamReader(this.openAsset(path + ".md5"));
-            //items.put(path, (new BufferedReader(reader)).readLine());
-            InputStreamReader reader = new InputStreamReader(this.openAsset(path));
-            items.put(path, EMPTY_CRC);
+    public Map<String, String> getItems( ) throws IOException {
+        HashMap items = new HashMap( );
+        Iterator i$ = this.readLines( this.openAsset( ASSET_LIST_NAME ) ).iterator( );
+        while( i$.hasNext( ) ) {
+            String path = ( String )i$.next( );
+            InputStreamReader reader = new InputStreamReader( this.openAsset( path ) ) ;
+            items.put( path, EMPTY_CRC );
         }
-
         return items;
     }
 
-    public Map<String, String> getExternalItems() {
+    public Map<String, String> getExternalItems( ) {
         try {
-            HashMap e = new HashMap();
-            File assetFile = new File(this.externalDir, ASSET_LIST_NAME);
-            Iterator i$ = this.readLines(new FileInputStream(assetFile)).iterator();
-
-            while(i$.hasNext()) {
-                String line = (String)i$.next();
-                String[] fields = line.split(" ");
+            HashMap e = new HashMap( );
+            File assetFile = new File( this.externalDir, ASSET_LIST_NAME );
+            Iterator i$ = this.readLines( new FileInputStream( assetFile ) ).iterator( );
+            while( i$.hasNext( ) ) {
+                String line = ( String )i$.next( );
+                String[ ] fields = line.split(" ");
                 // отключаем проверку контрольной суммы
-                e.put(fields[0], EMPTY_CRC);
-                //e.put(fields[0], fields[1]);
+                e.put( fields[ 0 ], EMPTY_CRC );
             }
-
             return e;
-        } catch (IOException var6) {
-            return Collections.emptyMap();
+        } catch ( IOException var6 ) {
+            return Collections.emptyMap( );
         }
     }
 
-    public Collection<String> getItemsToCopy(String path) throws IOException {
-        ArrayList items = new ArrayList();
-        ArrayDeque queue = new ArrayDeque();
-        queue.offer(path);
+    public Collection<String> getItemsToCopy( String path ) throws IOException {
+        ArrayList items = new ArrayList( );
+        ArrayDeque queue = new ArrayDeque( );
+        queue.offer( path );
 
-        while(!queue.isEmpty()) {
-            path = (String)queue.poll();
-            String[] list = this.assetManager.list(path);
-            String[] arr$ = list;
+        while( !queue.isEmpty( ) ) {
+            path = ( String )queue.poll( );
+            String[ ] list = this.assetManager.list( path );
+            String[ ] arr$ = list;
             int len$ = list.length;
-
-            for(int i$ = 0; i$ < len$; ++i$) {
-                String nested = arr$[i$];
-                queue.offer(nested);
+            for( int i$ = 0; i$ < len$; ++i$ ) {
+                String nested = arr$[ i$ ];
+                queue.offer( nested );
             }
-
-            if(list.length == 0) {
-                items.add(path);
+            if( list.length == 0 ) {
+                items.add( path );
             }
         }
-
         return items;
     }
 
-    private List<String> readLines(InputStream source) throws IOException {
-        ArrayList lines = new ArrayList();
-        BufferedReader br = new BufferedReader(new InputStreamReader(source));
-
+    private List<String> readLines( InputStream source ) throws IOException {
+        ArrayList lines = new ArrayList( );
+        BufferedReader br = new BufferedReader( new InputStreamReader( source ) );
         String line;
-        while(null != (line = br.readLine())) {
-            lines.add(line);
+        while( null != ( line = br.readLine( ) ) ) {
+            lines.add( line );
         }
-
         return lines;
     }
 
-    private InputStream openAsset(String asset) throws IOException {
-        return this.assetManager.open((new File(_targerDir, asset)).getPath());
+    private InputStream openAsset( String asset ) throws IOException {
+        return this.assetManager.open( ( new File( _targerDir, asset ) ).getPath( ) );
     }
 
-    public void updateItemList(Map<String, String> items) throws IOException {
-        File assetListFile = new File(this.externalDir, ASSET_LIST_NAME);
-        PrintWriter pw = new PrintWriter(new FileOutputStream(assetListFile));
-        Iterator i$ = items.entrySet().iterator();
-
-        while(i$.hasNext()) {
-            Map.Entry entry = (Map.Entry)i$.next();
-            pw.format("%s %s\n", new Object[]{entry.getKey(), entry.getValue()});
+    public void updateItemList( Map<String, String> items ) throws IOException {
+        File assetListFile = new File( this.externalDir, ASSET_LIST_NAME );
+        PrintWriter pw = new PrintWriter( new FileOutputStream( assetListFile ) );
+        Iterator i$ = items.entrySet( ).iterator( );
+        while( i$.hasNext( ) ) {
+            Map.Entry entry = ( Map.Entry )i$.next( );
+            pw.format("%s %s\n", new Object[ ]{ entry.getKey( ), entry.getValue( ) } );
         }
-
-        pw.close();
+        pw.close( );
     }
 
-    public File copy(String asset) throws IOException {
-        InputStream source = this.openAsset(asset);
-        File destinationFile = new File(this.externalDir, asset);
-        destinationFile.getParentFile().mkdirs();
-        FileOutputStream destination = new FileOutputStream(destinationFile);
-        byte[] buffer = new byte[1024];
-
+    public File copy( String asset ) throws IOException {
+        InputStream source = this.openAsset( asset );
+        File destinationFile = new File( this.externalDir, asset );
+        destinationFile.getParentFile( ).mkdirs( );
+        FileOutputStream destination = new FileOutputStream( destinationFile );
+        byte[ ] buffer = new byte[ 1024 ];
         int nread;
-        while((nread = source.read(buffer)) != -1) {
-            if(nread == 0) {
-                nread = source.read();
-                if(nread < 0) {
+        while( ( nread = source.read( buffer ) ) != -1 ) {
+            if( nread == 0 ) {
+                nread = source.read( );
+                if( nread < 0 ) {
                     break;
                 }
-
-                destination.write(nread);
+                destination.write( nread );
             } else {
-                destination.write(buffer, 0, nread);
+                destination.write( buffer, 0, nread );
             }
         }
-
-        destination.close();
+        destination.close( );
         return destinationFile;
     }
 
-    public File syncAssets() throws IOException {
-        ArrayList newItems = new ArrayList();
-        ArrayList unusedItems = new ArrayList();
-        Map items = this.getItems();
-        Map externalItems = this.getExternalItems();
-        Iterator i$ = items.keySet().iterator();
-
-        while(true) {
+    public File syncAssets( ) throws IOException {
+        ArrayList newItems = new ArrayList( );
+        ArrayList unusedItems = new ArrayList( );
+        Map items = this.getItems( );
+        Map externalItems = this.getExternalItems( );
+        Iterator i$ = items.keySet( ).iterator( );
+        while( true ) {
             String path;
-            while(i$.hasNext()) {
-                path = (String)i$.next();
-                if(((String)items.get(path)).equals(externalItems.get(path)) && (new File(this.externalDir, path)).exists())
-                {
-                    Log.i(TAG, String.format("Skipping asset %s: checksums are equal", new Object[]{path}));
+            while( i$.hasNext( ) ) {
+                path = ( String )i$.next( );
+                if( ( ( String )items.get( path ) ).equals( externalItems.get( path ) ) && ( new File( this.externalDir, path ) ).exists( ) ) {
+                    Log.i( TAG, String.format( "Skipping asset %s: checksums are equal", new Object[ ]{ path } ) );
                 }
-                else
-                {
-                    newItems.add(path);
+                else {
+                    newItems.add( path );
                 }
             }
-
-            unusedItems.addAll(externalItems.keySet());
-            unusedItems.removeAll(items.keySet());
-            i$ = newItems.iterator();
-
+            unusedItems.addAll( externalItems.keySet( ) );
+            unusedItems.removeAll( items.keySet( ) );
+            i$ = newItems.iterator( );
             File file;
-            while(i$.hasNext()) {
-                path = (String)i$.next();
-                file = this.copy(path);
-                Log.i(TAG, String.format("Copying asset %s to %s", new Object[]{path, file}));
+            while( i$.hasNext( ) ) {
+                path = ( String )i$.next( );
+                file = this.copy( path );
+                Log.i( TAG, String.format("Copying asset %s to %s", new Object[ ]{ path, file } ) );
             }
-
-            i$ = unusedItems.iterator();
-
-            while(i$.hasNext()) {
-                path = (String)i$.next();
-                file = new File(this.externalDir, path);
-                file.delete();
-                Log.i(TAG, String.format("Removing asset %s", new Object[]{file}));
+            i$ = unusedItems.iterator( );
+            while( i$.hasNext( ) ) {
+                path = ( String )i$.next( );
+                file = new File( this.externalDir, path );
+                file.delete( );
+                Log.i( TAG, String.format("Removing asset %s", new Object[ ]{ file } ) );
             }
-
-            this.updateItemList(items);
+            this.updateItemList( items );
             return this.externalDir;
         }
     }
-
 }
