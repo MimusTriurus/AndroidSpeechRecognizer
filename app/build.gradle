@@ -35,20 +35,22 @@ task exportJar(type: Copy){
 }
 // копируем файлы второй очереди в каталог сборки
 task copyDependencies {
-    copy {
-        from 'build/intermediates/bundles/release/libs/pocketsphinx-android-5prealpha-nolib.jar'
-        into '../build/release/'
-    }
+    doLast {
+        copy {
+            from 'build/intermediates/bundles/release/libs/pocketsphinx-android-5prealpha-nolib.jar'
+            into '../build/release/'
+        }
 
-    copy {
-        from 'build/intermediates/sourceFolderJavaResources/release/lib/armeabi/libpocketsphinx_jni.so'
-        into '../build/release/libs/armeabi-v7a/'
-    }
+        copy {
+            from 'build/intermediates/sourceFolderJavaResources/release/lib/armeabi/libpocketsphinx_jni.so'
+            into '../build/release/libs/armeabi-v7a/'
+        }
 
-    copy {
-        from 'build/intermediates/bundles/release/AndroidManifest.xml'
-        into '../build/release/'
+        copy {
+            from 'build/intermediates/bundles/release/AndroidManifest.xml'
+            into '../build/release/'
+        }
     }
 }
 // порядок выполнения задачи экспорта
-exportJar.dependsOn(deleteOldJar, copyDependencies, build)
+exportJar.dependsOn(deleteOldJar, build, copyDependencies)
