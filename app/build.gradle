@@ -22,19 +22,33 @@ dependencies {
     compile 'com.android.support:appcompat-v7:24.0.0'
     compile 'com.android.support:design:24.0.0'
 }
-
+// удаляем предыдущую версию библиотеки
 task deleteOldJar(type: Delete){
-    delete 'release/SpeechRecognizer.jar'
+    delete '../build/release/SpeechRecognizer.jar'
 }
-
+// экспортируем целевую библиотеку в каталог сборки
 task exportJar(type: Copy){
     from('build/intermediates/bundles/release/')
-    // set bin path
     into('../build/release/')
-    //into('E:/Projects/Unity3D/UnitySpeechRecognizer/Assets/Plugins/Android')
     include('classes.jar')
-
     rename('classes.jar', 'SpeechRecognizer.jar')
 }
+// копируем файлы второй очереди в каталог сборки
+task copyDependencies {
+    copy {
+        from 'build/intermediates/bundles/release/libs/pocketsphinx-android-5prealpha-nolib.jar'
+        into '../build/release/'
+    }
 
-exportJar.dependsOn(deleteOldJar, build)
+    copy {
+        from 'build/intermediates/sourceFolderJavaResources/release/lib/armeabi/libpocketsphinx_jni.so'
+        into '../build/release/libs/armeabi-v7a/'
+    }
+
+    copy {
+        from 'build/intermediates/bundles/release/AndroidManifest.xml'
+        into '../build/release/'
+    }
+}
+// порядок выполнения задачи экспорта
+exportJar.dependsOn(deleteOldJar, copyDependencies, build)
