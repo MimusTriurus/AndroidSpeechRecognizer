@@ -1,7 +1,7 @@
 # AndroidSpeechRecognizer
 Библиотека офлайн распознавания речи для Android. В основе - библиотека pocketsphinx.
 ---------
-Библиотека создавалась в расчете на последующее использование совместно с Unity 5 использованием обертки(коннектора) UnitySpeechRecognizer ( https://github.com/MimusTriurus/UnitySpeechRecognizer ).
+Библиотека создавалась в расчете на последующую интеграцию в проекты на Unity 5 за счет использования обертки(коннектора) UnitySpeechRecognizer ( https://github.com/MimusTriurus/UnitySpeechRecognizer ).
 
 Системные требования:
 1. Android SDK version 24;
