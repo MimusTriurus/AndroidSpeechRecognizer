@@ -12,4 +12,6 @@
 1. Склонировать репозиторий;
 2. Открыть local.properties в текстовом редакторе. Указать путь до Android SDK в поле sdk.dir и сохранить файл;
 3. Открыть проект. В файле build.gradle (AndroidSpeechRecognizer\app\build.gradle) в поле into() метода task exportJar(type: Copy) указать целевую директорию для библиотеки;
-4. Запустить сценарий exportJar (AndroidSpeechRecognizer\:app\Tasks\other\exportJar)
+4. Запустить сценарий exportJar (AndroidSpeechRecognizer\:app\Tasks\other\exportJar).
+
+Скомпилированная библиотека и необходимые для интеграции в Unity файлы находятся в <папка с проектом>/build/release
