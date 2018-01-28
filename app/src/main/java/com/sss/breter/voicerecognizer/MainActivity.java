@@ -58,10 +58,7 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
      * устанавливаем имя метода Unity объекта - обработчика результатов распознавания
      * @param name  -   имя метода
      */
-    public static void setRecognitionResultRecieverMethod( String name )
-    {
-        _recognitionResultMethodNameReciever = name;
-    }
+    public static void setRecognitionResultRecieverMethod( String name ) { _recognitionResultMethodNameReciever = name; }
 
     /**
      * устанавливаем имя метода Unity объекта - обработчика сообщения об окончании инициализации распознавателя
@@ -104,7 +101,7 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
      * отправка в UNity сообщения об ошибке в работе библиотеке
      * @param crash
      */
-    private static void crashMessToUnity(String crash) {
+    private static void crashMessToUnity( String crash ) {
         if ( ( _recieverObjectName != null ) && ( _crashMessRecieverMethodName != null ) )
             UnityPlayer.UnitySendMessage( _recieverObjectName, _crashMessRecieverMethodName, crash );
     }
@@ -285,15 +282,15 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
     }
     /**
      * добавляем слово в словарь
-     * @param pWord     слово
-     * @param pPhones   транскрипция
+     * @param word     слово
+     * @param phones   транскрипция
      * @return          рузультат добавления
      */
-    public boolean addWordIntoDictionary( String pWord, String pPhones ) {
+    public boolean addWordIntoDictionary( String word, String phones ) {
         try {
             //toUnityLog( "try add word:" + pWord + " phones:" + pPhones );
             if (_mRecognizer.getDecoder( ) != null)
-                _mRecognizer.getDecoder( ).addWord( pWord, pPhones, 1 );
+                _mRecognizer.getDecoder( ).addWord( word, phones, 1 );
             else
                 crashMessToUnity( "addWordIntoDictionary. Decoder not found" );
         }
@@ -305,15 +302,15 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
     }
     /**
      * добавляем формализованную строку с грамматикой
-     * @param pGrammarName      имя грамматики
-     * @param pGrammarString    формализованная строка грамматики
+     * @param grammarName      имя грамматики
+     * @param grammarString    формализованная строка грамматики
      * @return                  результат добавления
      */
-    public boolean addGrammarString(String pGrammarName, String pGrammarString) {
+    public boolean addGrammarString( String grammarName, String grammarString ) {
         try {
             //toUnityLog( "try add grammar string:" + pGrammarString );
-            if ( _baseGrammarName == null ) _baseGrammarName = pGrammarName;
-            _mRecognizer.addGrammarSearch( pGrammarName, pGrammarString );
+            if ( _baseGrammarName == null ) _baseGrammarName = grammarName;
+            _mRecognizer.addGrammarSearch( grammarName, grammarString );
         }
         catch ( Exception e ) {
             crashMessToUnity( "crash on add grammar string:" + e.getMessage( ) );
@@ -323,17 +320,17 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
     }
     /**
      * устанавливаем ключевое слово для поиска
-     * @param pKeyword ключевое слово
+     * @param keyword ключевое слово
      * @return         результат добавления
      */
-    public boolean setKeyword( String pKeyword ) {
+    public boolean setKeyword( String keyword ) {
         _useKeyword = true;
         try {
             //toUnityLog("try set keyword:" + pKeyword);
-            _mRecognizer.addKeyphraseSearch( KEYPHRASE_SEARCH, pKeyword );
+            _mRecognizer.addKeyphraseSearch( KEYPHRASE_SEARCH, keyword );
         }
         catch ( Exception e ) {
-            crashMessToUnity( "crash on set keyword:" + pKeyword );
+            crashMessToUnity( "crash on set keyword:" + keyword );
             return false;
         }
         return true;
@@ -358,9 +355,9 @@ public class MainActivity extends UnityPlayerActivity implements RecognitionList
     }
     /**
      * устанавливаем порог срабатывания для ключевой фразы
-     * @param pThreshold порог срабатывания
+     * @param threshold порог срабатывания
      */
-    public void setThreshold( float pThreshold ) {
-        _threshold = pThreshold;
+    public void setThreshold( float threshold ) {
+        _threshold = threshold;
     }
 }
