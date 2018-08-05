@@ -146,21 +146,23 @@ public class UnityAssets {
         InputStream source = this.openAsset( asset );
         File destinationFile = new File( this.externalDir, asset );
         destinationFile.getParentFile( ).mkdirs( );
-        FileOutputStream destination = new FileOutputStream( destinationFile );
-        byte[ ] buffer = new byte[ 1024 ];
-        int nread;
-        while( ( nread = source.read( buffer ) ) != -1 ) {
-            if( nread == 0 ) {
-                nread = source.read( );
-                if( nread < 0 ) {
-                    break;
+        if ( !destinationFile.exists( ) ) {
+            FileOutputStream destination = new FileOutputStream( destinationFile );
+            byte[ ] buffer = new byte[ 1024 ];
+            int nread;
+            while ( ( nread = source.read( buffer ) ) != -1 ) {
+                if ( nread == 0 ) {
+                    nread = source.read( );
+                    if ( nread < 0 ) {
+                        break;
+                    }
+                    destination.write( nread );
+                } else {
+                    destination.write( buffer, 0, nread );
                 }
-                destination.write( nread );
-            } else {
-                destination.write( buffer, 0, nread );
             }
+            destination.close( );
         }
-        destination.close( );
         return destinationFile;
     }
 
