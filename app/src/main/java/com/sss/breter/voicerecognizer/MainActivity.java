@@ -72,7 +72,7 @@ public class MainActivity implements RecognitionListener {
      */
     public void runRecognizerSetup( String language ) throws IOException {
         toUnityLog( "runRecognizerSetup" );
-        language = ACOUSTIC_MODELS_DIR + language;
+        language = PLUGIN_NAME + ACOUSTIC_MODELS_DIR + language;
         final String selectedLanguage = language;
         new AsyncTask<Void, Void, File>( ) {
             @Override
@@ -311,6 +311,7 @@ public class MainActivity implements RecognitionListener {
 
     private SpeechRecognizer _mRecognizer;
 
+    private static final String PLUGIN_NAME = "GameVoiceControl/";
     private static final String ACOUSTIC_MODELS_DIR = "acousticModels/";
     private static final String KEYPHRASE_SEARCH    = "keyphrase_search";
     private static final String INIT_RESULT_TRUE    = "true";
