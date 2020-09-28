@@ -10,10 +10,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7c14247a-36ec-4de6-a6f0-c89688963a64" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/caches/build_file_checksums.ser" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/build_file_checksums.ser" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/modules/app/app.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/app/app.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/app/build.gradle" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/libs/classes.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sss/breter/voicerecognizer/MainActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sss/breter/voicerecognizer/MainActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/libs/pocketsphinx-android-5prealpha-nolib.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/resources/lib/armeabi/libpocketsphinx_jni.so" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -129,7 +133,7 @@
       <recent name="E:\Projects\Android\VoiceRecognizer\app\src\main\assets\dict\ru" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.AndroidSpeechRecognizer [exportJar]">
+  <component name="RunManager" selected="Gradle.AndroidSpeechRecognizer [build]">
     <configuration default="true" type="AndroidRunConfigurationType" factoryName="Android Application">
       <module name="" />
       <option name="DEPLOY" value="true" />
@@ -335,6 +339,25 @@
       <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
       <method v="2" />
     </configuration>
+    <configuration name="AndroidSpeechRecognizer [bundleReleaseAar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="bundleReleaseAar" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
+      <method v="2" />
+    </configuration>
     <configuration name="AndroidSpeechRecognizer [clean]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -366,25 +389,6 @@
         <option name="taskNames">
           <list>
             <option value="exportJar" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
-      <method v="2" />
-    </configuration>
-    <configuration name="AndroidSpeechRecognizer:app [deleteOldJar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$/app" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value="deleteOldJar" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -449,19 +453,19 @@
       </method>
     </configuration>
     <list>
-      <item itemvalue="Gradle.AndroidSpeechRecognizer:app [deleteOldJar]" />
       <item itemvalue="Gradle.AndroidSpeechRecognizer [exportJar]" />
       <item itemvalue="Gradle.AndroidSpeechRecognizer [clean]" />
       <item itemvalue="Gradle.AndroidSpeechRecognizer [assembleRelease]" />
       <item itemvalue="Gradle.AndroidSpeechRecognizer [build]" />
+      <item itemvalue="Gradle.AndroidSpeechRecognizer [bundleReleaseAar]" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Gradle.AndroidSpeechRecognizer [bundleReleaseAar]" />
         <item itemvalue="Gradle.AndroidSpeechRecognizer [build]" />
         <item itemvalue="Gradle.AndroidSpeechRecognizer [assembleRelease]" />
         <item itemvalue="Gradle.AndroidSpeechRecognizer [clean]" />
         <item itemvalue="Gradle.AndroidSpeechRecognizer [exportJar]" />
-        <item itemvalue="Gradle.AndroidSpeechRecognizer:app [deleteOldJar]" />
       </list>
     </recent_temporary>
   </component>
@@ -504,22 +508,22 @@
       <screen x="0" y="0" width="1463" height="783" />
     </state>
     <state x="512" y="147" key="FileChooserDialogImpl/0.0.1463.783@0.0.1463.783" timestamp="1597776284623" />
-    <state width="1420" height="195" key="GridCell.Tab.0.bottom" timestamp="1599580773134">
+    <state width="1420" height="94" key="GridCell.Tab.0.bottom" timestamp="1601310628157">
       <screen x="0" y="0" width="1463" height="783" />
     </state>
-    <state width="1420" height="195" key="GridCell.Tab.0.bottom/0.0.1463.783@0.0.1463.783" timestamp="1599580773134" />
-    <state width="1420" height="195" key="GridCell.Tab.0.center" timestamp="1599580773134">
+    <state width="1420" height="94" key="GridCell.Tab.0.bottom/0.0.1463.783@0.0.1463.783" timestamp="1601310628157" />
+    <state width="1420" height="94" key="GridCell.Tab.0.center" timestamp="1601310628156">
       <screen x="0" y="0" width="1463" height="783" />
     </state>
-    <state width="1420" height="195" key="GridCell.Tab.0.center/0.0.1463.783@0.0.1463.783" timestamp="1599580773134" />
-    <state width="1420" height="195" key="GridCell.Tab.0.left" timestamp="1599580773134">
+    <state width="1420" height="94" key="GridCell.Tab.0.center/0.0.1463.783@0.0.1463.783" timestamp="1601310628156" />
+    <state width="1420" height="94" key="GridCell.Tab.0.left" timestamp="1601310628156">
       <screen x="0" y="0" width="1463" height="783" />
     </state>
-    <state width="1420" height="195" key="GridCell.Tab.0.left/0.0.1463.783@0.0.1463.783" timestamp="1599580773134" />
-    <state width="1420" height="195" key="GridCell.Tab.0.right" timestamp="1599580773134">
+    <state width="1420" height="94" key="GridCell.Tab.0.left/0.0.1463.783@0.0.1463.783" timestamp="1601310628156" />
+    <state width="1420" height="94" key="GridCell.Tab.0.right" timestamp="1601310628156">
       <screen x="0" y="0" width="1463" height="783" />
     </state>
-    <state width="1420" height="195" key="GridCell.Tab.0.right/0.0.1463.783@0.0.1463.783" timestamp="1599580773134" />
+    <state width="1420" height="94" key="GridCell.Tab.0.right/0.0.1463.783@0.0.1463.783" timestamp="1601310628156" />
     <state x="428" y="216" key="com.intellij.ide.util.TipDialog" timestamp="1597519567638">
       <screen x="0" y="0" width="1463" height="783" />
     </state>

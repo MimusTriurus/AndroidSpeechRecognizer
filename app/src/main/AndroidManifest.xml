@@ -7,14 +7,7 @@
           android:versionName="1.0">
 
     <application>
-        <activity android:name="com.sss.breter.voicerecognizer.MainActivity"
-                  android:configChanges="keyboardHidden|orientation"
-            tools:ignore="Instantiatable">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+
     </application>
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />

@@ -90,8 +90,8 @@
     </content>
     <orderEntry type="jdk" jdkName="Android API 28 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Gradle: ./app/libs/SpeechRecognizerNativeWrapper.jar" level="project" />
     <orderEntry type="library" name="Gradle: ./app/libs/classes.jar" level="project" />
     <orderEntry type="library" name="Gradle: ./app/libs/commons-io-2.5.jar" level="project" />
-    <orderEntry type="library" name="Gradle: ./app/libs/pocketsphinx-android-5prealpha-nolib.jar" level="project" />
   </component>
 </module>
