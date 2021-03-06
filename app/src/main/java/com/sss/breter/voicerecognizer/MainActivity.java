@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 
 import com.sss.breter.voicerecognizer.recognizer.UnityAssets;
+import com.sss.breter.voicerecognizer.recognizer.UnityAssetsObb;
 import com.unity3d.player.UnityPlayer;
 
 import java.io.File;
@@ -80,8 +81,16 @@ public class MainActivity implements RecognitionListener {
                 File assetDir = null;
                 try {
                     toUnityLog( "Acoustic model is being loaded..." );
-                    UnityAssets assets = new UnityAssets( _context, selectedLanguage );
-                    assetDir = assets.syncAssets( );
+                    UnityAssetsObb.logReceiverMethodName = _logReceiverMethodName;
+                    UnityAssetsObb.receiverObjectName = _recieverObjectName;
+                    UnityAssetsObb assetsObb = new UnityAssetsObb( _context, selectedLanguage );
+                    if ( assetsObb.exist( ) ) {
+                        assetDir = assetsObb.syncAssets();
+                    }
+                    else {
+                        UnityAssets assets = new UnityAssets( _context, selectedLanguage );
+                        assetDir = assets.syncAssets( );
+                    }
                 } catch ( IOException e ) {
                     crashMessToUnity( e.getMessage( ) );
                     initializationResult( INIT_RESULT_FALSE );
